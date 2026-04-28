@@ -1,0 +1,80 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String          @id @default(cuid())
+  email         String          @unique
+  password      String
+  name          String?
+  savedColleges SavedCollege[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model College {
+  id              String         @id @default(cuid())
+  name            String
+  slug            String         @unique
+  location        String
+  city            String
+  state           String
+  description     String         @db.Text
+  logo            String?
+  banner          String?
+  rating          Float          @default(0)
+  placementRate   Float          @default(0) // Percentage
+  highestPackage  Float          @default(0) // In LPA
+  establishedYear Int
+  type            CollegeType    @default(PRIVATE)
+  courses         Course[]
+  reviews         Review[]
+  cutoffRank      Int            // JEE Main rank
+  ranking         Int?
+  website         String?
+  savedBy         SavedCollege[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model Course {
+  id          String   @id @default(cuid())
+  name        String
+  fees        Int
+  duration    Int      // in years
+  collegeId   String
+  college     College  @relation(fields: [collegeId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int
+  comment   String   @db.Text
+  collegeId String
+  college   College  @relation(fields: [collegeId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model SavedCollege {
+  userId    String
+  collegeId String
+  user      User     @relation(fields: [userId], references: [id])
+  college   College  @relation(fields: [collegeId], references: [id])
+
+  @@id([userId, collegeId])
+}
+
+enum CollegeType {
+  GOVERNMENT
+  PRIVATE
+  DEEMED
+}
